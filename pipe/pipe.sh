@@ -9,14 +9,23 @@ source "$(dirname "${0}")/common.sh"
 : ${BACKUP_REPO?"You need to set the BACKUP_REPO environment variable."}
 : ${BACKUP_BRANCH?"You need to set the BACKUP_BRANCH environment variable."}
 
-git_backup() {
+git_config() {
+  git config --global --add safe.directory '*'
   git remote add backup ${BACKUP_REPO}
-  git checkout --orphan backup 
+
+  success "Config git and add remote backup repository"
+}
+
+git_backup() {
+  git checkout --orphan backup
+  success "Create backup branch without history"
+
   git add .
   git commit -m "Add files to backup"
-  git push -f backup ${BACKUP_BRANCH}
+  success "Commit files to backup branch"
 
-  success "Successfully pushed code to backup repository"
+  git push -f backup ${BACKUP_BRANCH}
+  success "Push code to backup repository"
 }
 
 setup_ssh() {
@@ -39,8 +48,9 @@ setup_ssh() {
   echo "IdentityFile ~/.ssh/pipelines_id" >> ~/.ssh/config
   chmod -R go-rwx ~/.ssh/
 
-  success "SSH key has been successfully set"
+  success "Set SSH key"
 }
 
 setup_ssh
+git_config
 git_backup
